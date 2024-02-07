@@ -57,9 +57,7 @@ OrigTypesMsg = set()
 print("Типов сообщений, всего: ", end=' ')
 
 for r in [A[i][2] for i in range(len(A))]:
-    match = re.search(r"ASA-\d", r)
-    if match != None:
-        OrigTypesMsg.add(match.group(0))
+    OrigTypesMsg.add(r)
 print(len(set(OrigTypesMsg)))
 for uniq in OrigTypesMsg:
     print("\t", end=' ')
