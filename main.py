@@ -6,46 +6,69 @@ import os
 import re
 import string
 
+def validate_ip(s):
+    a = s.split('.')
+    if len(a) != 4:
+        return False
+    for x in a:
+        if not x.isdigit():
+            return False
+        i = int(x)
+        if i < 0 or i > 255:
+            return False
+    return True
+
 specials = '<>[]' #etc
 trans = str.maketrans(specials, ' '*len(specials))
-
 
 filename = "./Log4test"
 
 Matrix = []
 
 with open(filename) as file:
-    lines = [line.rstrip().translate(trans) for line in file]
+    lines = [line.rstrip().translate(trans).replace("%", "% ") for line in file]
 
 A = []
 
+OrigIP = set()
+
 for line in lines:
-    if (line.find("Deny") == -1 ) and ( line.find("failed") == -1):
-        A.append(list(map(str, line.split(" "[4:]))))
+    A.append(list(map(str, line.split()[4:])))
 
-OriginNones = [A[i][0] for i in range(len(A))]
 
-#uniqs = set(uniqs)
+for i in A[4:]:
+    for j in i:
+        if validate_ip(j):
+            OrigIP.add(j)
+
+
+OriginNodes = [A[i][0] for i in range(len(A))]
+
+
 print("Оригинальных источников: ", end=' ')
-print(len(set(OriginNones)))
-for uniq in set(OriginNones):
-    print(uniq, end=' ')
+print(len(set(OriginNodes)))
+for uniq in set(OriginNodes):
+    print("\t" + uniq)
 
 print()
 
+OrigTypesMsg = set()
+
 print("Типов сообщений, всего: ", end=' ')
- 
-OrigTypesMsg = [A[i][2] for i in range(len(A))]
+
+for r in [A[i][2] for i in range(len(A))]:
+    match = re.search(r"ASA-\d", r)
+    if match != None:
+        OrigTypesMsg.add(match.group(0))
 print(len(set(OrigTypesMsg)))
-for uniq in set(OrigTypesMsg):
-    print("\t" + uniq) 
+for uniq in OrigTypesMsg:
+    print("\t", end=' ')
+    print(uniq) 
 
 print("Уникальных IP, всего: ", end=' ')
-OrigIP = [A[i][5] for i in range(len(A))]
-print(len(set(OrigIP)))
-for uniq in set(OrigIP):
-    print("\t" + uniq) 
-
+print(len(OrigIP))
+#for j in set(OrigIP):
+#    print(j)
 
 
 
